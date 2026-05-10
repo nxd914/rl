@@ -1,0 +1,6 @@
+venv/
+build/
+*.so
+__pycache__/
+*.egg-info/
+.DS_Store
