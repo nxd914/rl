@@ -38,17 +38,23 @@ The engine applies a rigorous two-part penalty function whenever the agent alter
 ### 1. Transaction Costs (Taker Fee)
 A proportional cost model representing exchange taker fees. The agent pays a fixed basis point (bps) fee (e.g., 10 bps) on the absolute change in portfolio weights.
 
-$$ \text{Cost}_{\text{taker}} = \text{taker\_fee\_bps} \times \sum_{i=1}^{N} | w_{i, t+1} - w_{i, t} | \times \text{NAV}_t $$
+```math
+\text{Cost}_{\text{taker}} = \text{taker\_fee\_bps} \times \sum_{i=1}^{N} | w_{i, t+1} - w_{i, t} | \times \text{NAV}_t
+```
 
 ### 2. Market Impact (Slippage)
 A non-linear penalty designed to simulate the market impact of placing large orders. We employ a $1.5$ power function to appropriately penalize significant, sudden shifts in allocation.
 
-$$ \text{Cost}_{\text{impact}} = \text{impact\_coeff} \times \sum_{i=1}^{N} \left( | w_{i, t+1} - w_{i, t} |^{1.5} \right) \times \text{NAV}_t $$
+```math
+\text{Cost}_{\text{impact}} = \text{impact\_coeff} \times \sum_{i=1}^{N} \left( | w_{i, t+1} - w_{i, t} |^{1.5} \right) \times \text{NAV}_t
+```
 
 ### 3. Net Asset Value (NAV) Transition
 The total rebalancing cost is immediately deducted from the portfolio's NAV prior to calculating the period's market return.
 
-$$ \text{NAV}_{t+1} = \left( \text{NAV}_t - \text{Cost}_{\text{taker}} - \text{Cost}_{\text{impact}} \right) \times \left( 1 + \sum_{i=1}^{N} w_{i, t+1} R_{i, t} \right) $$
+```math
+\text{NAV}_{t+1} = \left( \text{NAV}_t - \text{Cost}_{\text{taker}} - \text{Cost}_{\text{impact}} \right) \times \left( 1 + \sum_{i=1}^{N} w_{i, t+1} R_{i, t} \right)
+```
 
 ---
 
