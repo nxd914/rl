@@ -67,8 +67,6 @@ The RL environment interfaces with the PPO agent through precisely defined conti
 | **Observation** | `N * 3` | Array containing trailing returns, rolling variance/covariance, and current portfolio weights. |
 | **Action** | `N` | Target weight allocations for the $N$ assets. Handled via softmax activation to ensure sum-to-one constraint and long-only positions. |
 
-*(Note: $N=10$ for the default equity basket)*
-
 ---
 
 ## 📂 Repository Structure
