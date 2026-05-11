@@ -120,4 +120,4 @@ python3 train.py
 
 ## Live Execution (Paper Trading)
 
-The `scripts/live_trader.py` daemon bridges the PyTorch model to the Alpaca API for autonomous rebalancing. It continuously queries the account state, constructs the required Gym observation, queries the model for target allocations, and dispatches market orders to maintain the portfolio weights.
+The `scripts/live_trader.py` daemon runs a **Zero-Setup Local Paper Broker**. It continuously runs in memory, queries the model for target allocations based on simulated market data, and rebalances a virtual $1,000,000 portfolio locally without requiring any API keys or exchange setup.

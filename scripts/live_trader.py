@@ -1,45 +1,42 @@
-import os
 import time
 import numpy as np
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
 from stable_baselines3 import PPO
-
-# Environment variables
-API_KEY = os.environ.get('ALPACA_API_KEY', 'your_api_key_here')
-SECRET_KEY = os.environ.get('ALPACA_SECRET_KEY', 'your_secret_key_here')
-
-trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
 
 # Universe of 10 assets
 SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'V']
 
-def get_current_state():
-    account = trading_client.get_account()
-    equity = float(account.equity)
-    
-    positions = {p.symbol: float(p.market_value) for p in trading_client.get_all_positions()}
-    
-    current_weights = []
-    for sym in SYMBOLS:
-        val = positions.get(sym, 0.0)
-        current_weights.append(val / equity)
-        
-    return equity, np.array(current_weights, dtype=np.float32)
+class LocalPaperBroker:
+    def __init__(self, initial_capital=1000000.0):
+        self.equity = initial_capital
+        self.positions = {sym: 0.0 for sym in SYMBOLS}
+        self.current_weights = np.zeros(len(SYMBOLS), dtype=np.float32)
+
+    def get_current_state(self):
+        return self.equity, self.current_weights
+
+    def execute_rebalance(self, target_weights):
+        print(f"\n--- Rebalancing Portfolio ---")
+        self.current_weights = target_weights
+        for i, sym in enumerate(SYMBOLS):
+            alloc = target_weights[i] * self.equity
+            print(f"[{sym}] Target Allocation: ${alloc:,.2f} ({target_weights[i]*100:.1f}%)")
+        print("-----------------------------\n")
 
 def main():
+    print("Initializing Zero-Setup Paper Broker...")
+    broker = LocalPaperBroker(initial_capital=1000000.0)
+    
     print("Loading PPO Model...")
     try:
         model = PPO.load("ppo_portfolio")
     except Exception as e:
-        print(f"Warning: Model could not be loaded: {e}. Ensure it is trained and saved.")
+        print(f"Warning: Model could not be loaded: {e}. Defaulting to equal weights.")
         model = None
         
     while True:
         try:
-            equity, current_weights = get_current_state()
-            print(f"Current Equity: {equity}")
+            equity, current_weights = broker.get_current_state()
+            print(f"Current Paper Equity: ${equity:,.2f}")
             
             # Mock trailing observation data
             mock_trailing_returns = np.random.normal(0, 0.01, len(SYMBOLS)).astype(np.float32)
@@ -58,28 +55,14 @@ def main():
             else:
                 target_weights = np.ones(len(SYMBOLS)) / len(SYMBOLS)
             
-            for i, sym in enumerate(SYMBOLS):
-                target_weight = target_weights[i]
-                current_weight = current_weights[i]
-                
-                delta_weight = target_weight - current_weight
-                delta_value = delta_weight * equity
-                
-                if abs(delta_weight) > 0.01: # 1% threshold
-                    side = OrderSide.BUY if delta_value > 0 else OrderSide.SELL
-                    qty = abs(delta_value)
-                    
-                    print(f"Submitting {side} order for {sym}, value: {qty}")
-                    req = MarketOrderRequest(
-                        symbol=sym,
-                        notional=round(qty, 2),
-                        side=side,
-                        time_in_force=TimeInForce.DAY
-                    )
-                    trading_client.submit_order(order_data=req)
+            broker.execute_rebalance(target_weights)
 
-            print("Rebalance complete. Sleeping 5 minutes...")
-            time.sleep(300)
+            # Mock market movement for the next tick
+            market_return = np.sum(target_weights * np.random.normal(0.0005, 0.01, len(SYMBOLS)))
+            broker.equity *= (1.0 + market_return)
+
+            print("Rebalance complete. Sleeping 60 seconds (simulated tick)...")
+            time.sleep(60)
             
         except Exception as e:
             print(f"Error in loop: {e}")
