@@ -69,7 +69,7 @@ setup(
     author='Noah Donovan',
     description='Portfolio Engine C++ backend',
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
+    install_requires=['pybind11>=2.2', 'alpaca-py'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )

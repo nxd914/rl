@@ -117,3 +117,7 @@ To run the training script and evaluate the PPO agent:
 ```bash
 python3 train.py
 ```
+
+## Live Execution (Paper Trading)
+
+The `scripts/live_trader.py` daemon bridges the PyTorch model to the Alpaca API for autonomous rebalancing. It continuously queries the account state, constructs the required Gym observation, queries the model for target allocations, and dispatches market orders to maintain the portfolio weights.
